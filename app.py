@@ -9,6 +9,8 @@ from werkzeug.utils import secure_filename
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = Path(os.getenv('DB_PATH', str(BASE_DIR / 'sansu_v5_1.db')))
 APP_NAME = 'SANSU AGRIFOOD INTEGRATED FARM SYSTEM'
+DASHBOARD_SUBTITLE = 'Mixed Farm Management ERP'
+FOOTER_EMAIL = 'sansuagriintegfarm@gmail.com'
 MODULES = ['POULTRY', 'HOG', 'FISH']
 PARTICIPANT_ROLES = ['Owner', 'Caretaker', 'Investor']
 BANK_TYPES = ['Bank', 'GCash', 'Maya', 'Cash on Hand']
@@ -18,10 +20,7 @@ EXPENSE_CATEGORIES = ['Feeds', 'Medicines', 'Vitamins', 'Vaccines', 'Chicks', 'L
 FEED_USAGE_TYPES = ['Direct Use', 'Add to Inventory']
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'sansu-final-secret')
-LOGO_URL = os.getenv('LOGO_URL', '').strip()
-FOOTER_EMAIL = 'sansuagriintegfarm@gmail.com'
-DASHBOARD_SUBTITLE = 'Mixed Farm Management ERP'
+app.secret_key = os.getenv('SECRET_KEY', 'sansu-v6-secret')
 UPLOAD_DIR = BASE_DIR / 'receipts'
 ALLOWED_UPLOADS = {'jpg','jpeg','png','pdf','webp'}
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -134,13 +133,6 @@ def save_uploaded_receipt(file_storage, prefix='receipt'):
         counter += 1
     file_storage.save(target)
     return target.name
-
-
-def fmt_money(value):
-    try:
-        return f"₱{float(value or 0):,.2f}"
-    except Exception:
-        return '₱0.00'
 
 def init_db():
     db = sqlite3.connect(DB_PATH)
@@ -362,17 +354,8 @@ def init_db():
     );
     ''')
     if db.execute('SELECT COUNT(*) FROM users').fetchone()[0] == 0:
-        db.execute('INSERT INTO users(username,password,full_name,role) VALUES(?,?,?,?)', ('admin', generate_password_hash('admin123'), 'Administrator', 'Admin'))
-        db.execute('INSERT INTO users(username,password,full_name,role) VALUES(?,?,?,?)', ('secretary', generate_password_hash('secretary123'), 'Farm Secretary', 'Secretary'))
-    else:
-        if db.execute('SELECT 1 FROM users WHERE username=?', ('admin',)).fetchone():
-            db.execute("UPDATE users SET role='Admin', password=? WHERE username=?", (generate_password_hash('admin123'), 'admin'))
-        else:
-            db.execute('INSERT INTO users(username,password,full_name,role) VALUES(?,?,?,?)', ('admin', generate_password_hash('admin123'), 'Administrator', 'Admin'))
-        if db.execute('SELECT 1 FROM users WHERE username=?', ('secretary',)).fetchone():
-            db.execute("UPDATE users SET role='Secretary', password=? WHERE username=?", (generate_password_hash('secretary123'), 'secretary'))
-        else:
-            db.execute('INSERT INTO users(username,password,full_name,role) VALUES(?,?,?,?)', ('secretary', generate_password_hash('secretary123'), 'Farm Secretary', 'Secretary'))
+        db.execute('INSERT INTO users(username,password,full_name,role) VALUES(?,?,?,?)', ('admin', generate_password_hash('admin'), 'Administrator', 'Admin'))
+        db.execute('INSERT INTO users(username,password,full_name,role) VALUES(?,?,?,?)', ('secretary', generate_password_hash('secretary'), 'Farm Secretary', 'Secretary'))
     db.commit()
     db.close()
 
@@ -434,12 +417,12 @@ def finance_summary_for_module(module, active_only=False):
     else:
         if active_only and get_cycle('FISH'):
             cycle = get_cycle('FISH')
-            revenue = query('SELECT COALESCE(SUM(CASE WHEN ft.transaction_type IN ("SELL","EXPORT") THEN ft.total_amount ELSE 0 END),0) v FROM fish_transactions ft WHERE ft.fish_cycle_id IN (SELECT id FROM fish_cycles WHERE cycle_id=?)', (cycle['id'],), one=True)['v']
+            revenue = query('SELECT COALESCE(SUM(CASE WHEN ft.transaction_type="SELL" THEN ft.total_amount ELSE 0 END),0) v FROM fish_transactions ft WHERE ft.fish_cycle_id IN (SELECT id FROM fish_cycles WHERE cycle_id=?)', (cycle['id'],), one=True)['v']
             expenses = query('SELECT COALESCE(SUM(CASE WHEN ft.transaction_type="BUY" THEN ft.total_amount ELSE 0 END),0) v FROM fish_transactions ft WHERE ft.fish_cycle_id IN (SELECT id FROM fish_cycles WHERE cycle_id=?)', (cycle['id'],), one=True)['v']
             expenses += query('SELECT COALESCE(SUM(amount),0) v FROM fish_expenses WHERE fish_cycle_id IN (SELECT id FROM fish_cycles WHERE cycle_id=?)', (cycle['id'],), one=True)['v']
             capital = query('SELECT COALESCE(SUM(amount),0) v FROM capital_entries WHERE module_name="FISH" AND cycle_id=?', (cycle['id'],), one=True)['v']
         else:
-            revenue = query('SELECT COALESCE(SUM(CASE WHEN transaction_type IN ("SELL","EXPORT") THEN total_amount ELSE 0 END),0) v FROM fish_transactions', one=True)['v']
+            revenue = query('SELECT COALESCE(SUM(CASE WHEN transaction_type="SELL" THEN total_amount ELSE 0 END),0) v FROM fish_transactions', one=True)['v']
             expenses = query('SELECT COALESCE(SUM(CASE WHEN transaction_type="BUY" THEN total_amount ELSE 0 END),0) v FROM fish_transactions', one=True)['v']
             expenses += query('SELECT COALESCE(SUM(amount),0) v FROM fish_expenses', one=True)['v']
             capital = query('SELECT COALESCE(SUM(amount),0) v FROM capital_entries WHERE module_name="FISH"', one=True)['v']
@@ -509,7 +492,7 @@ def module_cashflow(module, active_only=True):
         if cycle:
             cap_sql += ' AND ce.cycle_id=?'; params.append(cycle['id'])
         rows += [dict(r) for r in query(cap_sql, tuple(params))]
-        tx_sql = 'SELECT ft.id, ft.entry_date, CASE WHEN ft.transaction_type IN ("SELL","EXPORT") THEN ft.transaction_type ELSE "Buy" END kind, COALESCE(ft.buyer, ft.supplier, ft.species) particulars, CASE WHEN ft.transaction_type IN ("SELL","EXPORT") THEN ft.total_amount ELSE 0 END cash_in, CASE WHEN ft.transaction_type="BUY" THEN ft.total_amount ELSE 0 END cash_out, ft.notes FROM fish_transactions ft'
+        tx_sql = 'SELECT ft.id, ft.entry_date, CASE WHEN ft.transaction_type="SELL" THEN "Sale" ELSE "Buy" END kind, COALESCE(ft.buyer, ft.supplier, ft.species) particulars, CASE WHEN ft.transaction_type="SELL" THEN ft.total_amount ELSE 0 END cash_in, CASE WHEN ft.transaction_type="BUY" THEN ft.total_amount ELSE 0 END cash_out, ft.notes FROM fish_transactions ft'
         params=[]
         if cycle:
             tx_sql += ' WHERE ft.fish_cycle_id IN (SELECT id FROM fish_cycles WHERE cycle_id=?)'; params.append(cycle['id'])
@@ -535,50 +518,6 @@ def module_cashflow(module, active_only=True):
     return rows, summary
 
 
-
-
-def poultry_heads_summary():
-    placed = query('SELECT COALESCE(SUM(birds_count),0) v FROM poultry_batches WHERE status="ACTIVE"', one=True)['v']
-    deaths = query('SELECT COALESCE(SUM(deaths),0) v FROM poultry_mortality pm JOIN poultry_batches pb ON pb.id=pm.batch_id WHERE pb.status="ACTIVE"', one=True)['v']
-    sold = query('SELECT COALESCE(SUM(birds_sold),0) v FROM poultry_sales ps JOIN poultry_batches pb ON pb.id=ps.batch_id WHERE pb.status="ACTIVE"', one=True)['v']
-    return max(int(placed or 0) - int(deaths or 0) - int(sold or 0), 0)
-
-
-def hog_type_counts():
-    rows = query('SELECT pen_name, notes, source, heads FROM hog_cycles WHERE status="ACTIVE" ORDER BY id DESC')
-    counts = {'piglets': 0, 'sows': 0, 'fattener': 0, 'other': 0}
-    for r in rows:
-        text = ' '.join([str(r['pen_name'] or ''), str(r['notes'] or ''), str(r['source'] or '')]).lower()
-        heads = int(r['heads'] or 0)
-        if any(k in text for k in ['piglet', 'piglets', 'weaner']):
-            counts['piglets'] += heads
-        elif 'sow' in text or 'breeder' in text:
-            counts['sows'] += heads
-        elif any(k in text for k in ['fattener', 'finisher', 'grower']):
-            counts['fattener'] += heads
-        else:
-            counts['other'] += heads
-    return counts
-
-
-def fish_deals_summary():
-    bought = query('SELECT COALESCE(SUM(kilos),0) v FROM fish_transactions WHERE transaction_type="BUY"', one=True)['v']
-    exported = query('SELECT COALESCE(SUM(kilos),0) v FROM fish_transactions WHERE transaction_type="EXPORT"', one=True)['v']
-    sold = query('SELECT COALESCE(SUM(kilos),0) v FROM fish_transactions WHERE transaction_type="SELL"', one=True)['v']
-    return {
-        'bought': float(bought or 0),
-        'export': float(exported or 0),
-        'sales': float(sold or 0),
-    }
-
-
-def recent_receipts(limit=8):
-    rows = []
-    rows += [dict(r) for r in query('SELECT entry_date, category, amount, receipt_file, description, "Poultry" module_name FROM poultry_expenses WHERE receipt_file IS NOT NULL AND receipt_file != "" ORDER BY id DESC LIMIT ?', (limit,))]
-    rows += [dict(r) for r in query('SELECT entry_date, category, amount, receipt_file, description, "Hog" module_name FROM hog_expenses WHERE receipt_file IS NOT NULL AND receipt_file != "" ORDER BY id DESC LIMIT ?', (limit,))]
-    rows += [dict(r) for r in query('SELECT entry_date, category, amount, receipt_file, description, "Fish" module_name FROM fish_expenses WHERE receipt_file IS NOT NULL AND receipt_file != "" ORDER BY id DESC LIMIT ?', (limit,))]
-    rows.sort(key=lambda r: r['entry_date'] or '', reverse=True)
-    return rows[:limit]
 
 
 def poultry_house_monitoring():
@@ -631,16 +570,32 @@ def dashboard_context():
     poultry_active = finance_summary_for_module('POULTRY', active_only=True)
     hog_active = finance_summary_for_module('HOG', active_only=True)
     fish_active = finance_summary_for_module('FISH', active_only=True)
-    poultry_live = poultry_heads_summary()
-    hog_counts = hog_type_counts()
-    hog_heads = sum(hog_counts.values())
-    fish_summary = fish_deals_summary()
-    fish_kilos = fish_summary['bought']
+    poultry_live = query('SELECT COALESCE(SUM(birds_count),0) v FROM poultry_batches WHERE status="ACTIVE"', one=True)['v'] - query('SELECT COALESCE(SUM(deaths),0) v FROM poultry_mortality', one=True)['v'] - query('SELECT COALESCE(SUM(birds_sold),0) v FROM poultry_sales', one=True)['v']
+    hog_rows = query('SELECT pen_name, heads FROM hog_cycles WHERE status="ACTIVE"')
+    hog_sold = float(query('SELECT COALESCE(SUM(heads),0) v FROM hog_sales', one=True)['v'] or 0)
+    hog_breakdown = {'piglets': 0, 'sows': 0, 'fattener': 0, 'other': 0}
+    for row in hog_rows:
+        pen = (row['pen_name'] or '').lower()
+        heads = float(row['heads'] or 0)
+        if 'piglet' in pen:
+            hog_breakdown['piglets'] += heads
+        elif 'sow' in pen or 'breeder' in pen:
+            hog_breakdown['sows'] += heads
+        elif 'fattener' in pen or 'finisher' in pen or 'grower' in pen:
+            hog_breakdown['fattener'] += heads
+        else:
+            hog_breakdown['other'] += heads
+    hog_heads = max(0, sum(hog_breakdown.values()) - hog_sold)
+    fish_kilos = query('SELECT COALESCE(SUM(CASE WHEN transaction_type="BUY" THEN kilos ELSE -kilos END),0) v FROM fish_transactions', one=True)['v']
+    fish_buy = float(query('SELECT COALESCE(SUM(kilos),0) v FROM fish_transactions WHERE transaction_type="BUY"', one=True)['v'] or 0)
+    fish_export = float(query('SELECT COALESCE(SUM(kilos),0) v FROM fish_transactions WHERE transaction_type="EXPORT"', one=True)['v'] or 0)
+    fish_sales = float(query('SELECT COALESCE(SUM(kilos),0) v FROM fish_transactions WHERE transaction_type="SELL"', one=True)['v'] or 0)
     modules = {'POULTRY': poultry_active, 'HOG': hog_active, 'FISH': fish_active}
     total_remaining = max(sum(max(v['remaining'], 0) for v in modules.values()), 1)
     module_mix = {k.lower(): safe_pct(max(v['remaining'], 0), total_remaining) for k, v in modules.items()}
     revenue_chart = {k.lower(): float(v['revenue'] or 0) for k, v in modules.items()}
     expense_chart = {k.lower(): float(v['expenses'] or 0) for k, v in modules.items()}
+    capital_chart = {k.lower(): float(v['capital'] or 0) for k, v in modules.items()}
     return {
         'poultry': poultry_active,
         'hog': hog_active,
@@ -648,14 +603,14 @@ def dashboard_context():
         'module_mix': module_mix,
         'revenue_chart': revenue_chart,
         'expense_chart': expense_chart,
-        'poultry_live': poultry_live,
-        'hog_heads': hog_heads,
-        'hog_counts': hog_counts,
-        'fish_kilos': fish_kilos,
-        'fish_summary': fish_summary,
+        'capital_chart': capital_chart,
+        'poultry_live': max(0, poultry_live),
+        'hog_heads': max(0, hog_heads),
+        'hog_breakdown': {k:int(v) for k,v in hog_breakdown.items()},
+        'fish_kilos': max(0, float(fish_kilos or 0)),
+        'fish_breakdown': {'buy': fish_buy, 'export': fish_export, 'sales': fish_sales},
         'bank_total': query('SELECT COALESCE(SUM(current_balance),0) v FROM bank_accounts', one=True)['v'],
         'recent_bank': query('SELECT bt.*, ba.account_name FROM bank_transactions bt LEFT JOIN bank_accounts ba ON ba.id=bt.account_id ORDER BY bt.id DESC LIMIT 8'),
-        'recent_receipts': recent_receipts(),
         'house_board': poultry_house_monitoring(),
     }
 
@@ -748,8 +703,8 @@ def unified_finance_history(module, active_only=True):
         for r in capital:
             rows.append({'entry_date': r['entry_date'], 'type_label': 'Capital', 'details': r['source_name'] or 'Capital entry', 'amount': float(r['amount'] or 0), 'record_type': 'capital', 'record_id': r['id'], 'nature':'in', 'receipt_file': None})
         for r in tx:
-            nature = 'in' if r['transaction_type'] in ('SELL', 'EXPORT') else 'out'
-            rows.append({'entry_date': r['entry_date'], 'type_label': (r['transaction_type'].title() if nature == 'in' else 'Fish Purchase'), 'details': (r['buyer'] or r['supplier'] or r['species'] or 'Fish transaction') + (f" - {r['species']}" if r['species'] else ''), 'amount': float(r['total_amount'] or 0), 'record_type': 'fish_tx', 'record_id': r['id'], 'nature':nature, 'receipt_file': None})
+            nature = 'in' if r['transaction_type'] == 'SELL' else 'out'
+            rows.append({'entry_date': r['entry_date'], 'type_label': 'Sale' if nature == 'in' else 'Fish Purchase', 'details': (r['buyer'] or r['supplier'] or r['species'] or 'Fish transaction') + (f" - {r['species']}" if r['species'] else ''), 'amount': float(r['total_amount'] or 0), 'record_type': 'fish_tx', 'record_id': r['id'], 'nature':nature, 'receipt_file': None})
         for r in expenses:
             rows.append({'entry_date': r['entry_date'], 'type_label': r['category'] or 'Expense', 'details': r['description'] or r['category'] or 'Expense', 'amount': float(r['amount'] or 0), 'record_type': 'fish_expense', 'record_id': r['id'], 'nature':'out', 'receipt_file': r['receipt_file']})
     rows.sort(key=lambda x: ((x['entry_date'] or ''), x['record_id']), reverse=True)
@@ -813,34 +768,21 @@ def grouped_expenses(rows):
 def inject_globals():
     return {
         'app_name': APP_NAME,
+        'dashboard_subtitle': DASHBOARD_SUBTITLE,
+        'footer_email': FOOTER_EMAIL,
+        'logo_url': os.getenv('LOGO_URL', '').strip(),
         'current_user': session.get('user'),
         'modules': MODULES,
         'is_admin_user': is_admin(),
         'can_access_module': can_access_module,
-        'logo_url': LOGO_URL,
-        'footer_email': FOOTER_EMAIL,
-        'dashboard_subtitle': DASHBOARD_SUBTITLE,
-        'fmt_money': fmt_money,
     }
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username'].strip()
-        password = request.form['password']
-        user = query('SELECT * FROM users WHERE username=?', (username,), one=True)
-        valid = False
-        if user:
-            try:
-                valid = check_password_hash(user['password'], password)
-            except Exception:
-                valid = False
-            if not valid and username == 'admin' and password in {'admin123', 'admin'}:
-                valid = True
-            if not valid and username == 'secretary' and password in {'secretary123', 'secretary'}:
-                valid = True
-        if valid:
+        user = query('SELECT * FROM users WHERE username=?', (request.form['username'],), one=True)
+        if user and check_password_hash(user['password'], request.form['password']):
             session['user'] = {'username': user['username'], 'full_name': user['full_name'], 'role': user['role']}
             return redirect(url_for('dashboard' if user['role'] == 'Admin' else 'poultry_page'))
         flash('Invalid login.', 'danger')
