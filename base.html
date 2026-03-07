@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ app_name }}</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{--bg:#f4f7f3;--panel:#ffffff;--ink:#122018;--muted:#64748b;--line:#dbe4dc;--brand:#14532d;--brand2:#22c55e;--soft:#ecfdf3;--warn:#b45309;--danger:#b91c1c}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    a{text-decoration:none;color:inherit} .app{display:flex;min-height:100vh}.sidebar{width:280px;background:linear-gradient(180deg,#08120d,#102117);color:#fff;padding:24px 18px;position:sticky;top:0;height:100vh;overflow:auto}
+    .brand{display:flex;gap:14px;align-items:center;margin-bottom:20px}.logo{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,#16a34a,#65a30d);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;overflow:hidden}
+    .logo img{width:100%;height:100%;object-fit:cover}.brand h1{font-size:17px;line-height:1.15;margin:0}.brand small{display:block;color:#b7c9bd;margin-top:6px}
+    .nav h4{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8ea698;margin:18px 10px 8px}.nav a{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;color:#dce8de;margin:4px 0}.nav a.active,.nav a:hover{background:rgba(255,255,255,.08);color:#fff}.main{flex:1;min-width:0}.topbar{background:rgba(255,255,255,.82);backdrop-filter:blur(10px);padding:18px 28px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:5}
+    .topbar h2{margin:0;font-size:28px}.topbar p{margin:5px 0 0;color:var(--muted)} .userbox{display:flex;align-items:center;gap:12px}.avatar{width:42px;height:42px;border-radius:14px;background:#dcfce7;color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:800}
+    .container{padding:26px}.grid{display:grid;gap:18px}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.card{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 8px 20px rgba(15,23,42,.04)}
+    .kpi .label{font-size:13px;color:var(--muted)} .kpi .value{font-size:32px;font-weight:800;margin:8px 0 4px}.muted{color:var(--muted)} .pill{display:inline-block;padding:7px 12px;border-radius:999px;background:var(--soft);color:var(--brand);font-size:12px;font-weight:700}
+    .tabs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}.tabs a{padding:10px 14px;border-radius:14px;background:#fff;border:1px solid var(--line);color:var(--muted);font-weight:600}.tabs a.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    table{width:100%;border-collapse:collapse} th,td{padding:12px 10px;border-bottom:1px solid #edf2ee;text-align:left;font-size:14px;vertical-align:top} th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    .table-wrap{overflow:auto}.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.form-grid .full{grid-column:1/-1} input,select,textarea{width:100%;padding:11px 13px;border:1px solid #d7e0d9;border-radius:14px;font:inherit;background:#fff} textarea{min-height:88px;resize:vertical}
+    button,.btn{padding:11px 16px;border:0;border-radius:14px;background:var(--brand);color:#fff;font-weight:700;cursor:pointer;display:inline-block}.btn.alt{background:#fff;color:var(--ink);border:1px solid var(--line)} .btn.warn{background:#92400e}.btn.danger{background:#991b1b}
+    .flash{padding:14px 16px;border-radius:16px;margin-bottom:16px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412}.flash.success{background:#f0fdf4;border-color:#bbf7d0;color:#166534}.flash.danger{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+    .progress{height:10px;background:#edf4ee;border-radius:999px;overflow:hidden}.progress > span{display:block;height:100%;background:linear-gradient(90deg,#15803d,#4ade80)}
+    .foot{padding:16px 28px;color:#64748b;font-size:13px}
+    @media (max-width:1100px){.g4,.g3,.g2,.form-grid{grid-template-columns:1fr 1fr}.sidebar{display:none}.topbar h2{font-size:22px}}
+    @media (max-width:720px){.g4,.g3,.g2,.form-grid{grid-template-columns:1fr}.container{padding:16px}.topbar{padding:14px 16px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">{% if logo_url %}<img src="{{ logo_url }}" alt="logo">{% else %}SA{% endif %}</div>
+      <div><h1>{{ app_name }}</h1><small>{{ dashboard_subtitle }}</small></div>
+    </div>
+    <nav class="nav">
+      {% if is_admin_user %}
+      <h4>Main</h4>
+      <a href="/" class="{% if request.path=='/' %}active{% endif %}">Dashboard</a>
+      {% endif %}
+      <h4>Operations</h4>
+      {% if can_access_module('POULTRY') %}<a href="/poultry" class="{% if request.path.startswith('/poultry') %}active{% endif %}">Poultry</a>{% endif %}
+      {% if is_admin_user %}
+      <a href="/hog" class="{% if request.path.startswith('/hog') %}active{% endif %}">Hog</a>
+      <a href="/fish" class="{% if request.path.startswith('/fish') %}active{% endif %}">Fish</a>
+      <h4>Finance</h4>
+      <a href="/finance" class="{% if request.path.startswith('/finance') %}active{% endif %}">Cashflow</a>
+      <a href="/bank" class="{% if request.path.startswith('/bank') %}active{% endif %}">Bank</a>
+      <h4>People</h4>
+      <a href="/participants" class="{% if request.path.startswith('/participants') %}active{% endif %}">Participants</a>
+      {% endif %}
+      <h4>Session</h4>
+      <a href="/logout">Logout</a>
+    </nav>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+        <p>{% block page_subtitle %}{{ dashboard_subtitle }}{% endblock %}</p>
+      </div>
+      <div class="userbox">
+        <div class="avatar">{{ (current_user.full_name or current_user.username or 'U')[:2].upper() }}</div>
+        <div><strong>{{ current_user.full_name or current_user.username }}</strong><div class="muted">{{ current_user.role }}</div></div>
+      </div>
+    </div>
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+    <div class="foot">{{ footer_email }}</div>
+  </main>
+</div>
+</body>
+</html>
