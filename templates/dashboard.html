@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}{% endblock %}
+{% block content %}
+<div class="grid g4">
+  <div class="card kpi">
+    <div class="label">Poultry Farm</div>
+    <div class="value">{{ ctx.poultry_live or 0 }}</div>
+    <div class="muted">heads</div>
+  </div>
+  <div class="card kpi">
+    <div class="label">Hog Farm</div>
+    <div class="value">{{ ctx.hog_heads or 0 }}</div>
+    <div class="muted">Piglets {{ ctx.hog_counts.piglets or 0 }} · Sows {{ ctx.hog_counts.sows or 0 }} · Fattener {{ ctx.hog_counts.fattener or 0 }}</div>
+  </div>
+  <div class="card kpi">
+    <div class="label">Fish Deals</div>
+    <div class="value">{{ '%.0f'|format((ctx.fish_summary.bought or 0) + (ctx.fish_summary.export or 0) + (ctx.fish_summary.sales or 0)) }}</div>
+    <div class="muted">Buy {{ '%.0f'|format(ctx.fish_summary.bought or 0) }}kg · Export {{ '%.0f'|format(ctx.fish_summary.export or 0) }}kg · Sales {{ '%.0f'|format(ctx.fish_summary.sales or 0) }}kg</div>
+  </div>
+  <div class="card kpi">
+    <div class="label">Bank Total</div>
+    <div class="value">{{ fmt_money(ctx.bank_total) }}</div>
+  </div>
+</div>
+
+<div class="grid g4" style="margin-top:18px;align-items:start">
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong>Poultry</strong><span class="pill">Heads</span></div><canvas id="poultryPie" height="180"></canvas></div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong>Hog</strong><span class="pill">Heads</span></div><canvas id="hogPie" height="180"></canvas></div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong>Fish Deals</strong><span class="pill">Kilograms</span></div><canvas id="fishPie" height="180"></canvas></div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong>Cashflow</strong><span class="pill">Per Module</span></div><canvas id="cashPie" height="180"></canvas></div>
+</div>
+
+<div class="grid g2" style="margin-top:18px;align-items:start">
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong>Income vs Expense</strong><span class="pill">Per Module</span></div><canvas id="barChart" height="180"></canvas></div>
+  <div class="card"><strong>Capital and Cashflow</strong><table><thead><tr><th>Module</th><th>Capital</th><th>Cashflow</th></tr></thead><tbody><tr><td>Poultry</td><td>{{ fmt_money(ctx.poultry.capital) }}</td><td>{{ fmt_money(ctx.poultry.remaining) }}</td></tr><tr><td>Hog</td><td>{{ fmt_money(ctx.hog.capital) }}</td><td>{{ fmt_money(ctx.hog.remaining) }}</td></tr><tr><td>Fish</td><td>{{ fmt_money(ctx.fish.capital) }}</td><td>{{ fmt_money(ctx.fish.remaining) }}</td></tr></tbody></table></div>
+</div>
+
+<div class="grid g2" style="margin-top:18px;align-items:start">
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><strong>Active Batches</strong><span class="pill">Poultry</span></div><div class="table-wrap"><table><thead><tr><th>House</th><th>Batches</th><th>Heads</th><th>Mortality</th><th>Expenses</th><th>Profit</th></tr></thead><tbody>{% for row in ctx.house_board %}<tr><td>{{ row.house_name }}</td><td>{{ row.batches_label }}</td><td>{{ row.live_birds }}</td><td>{{ row.mortality_rate }}%</td><td>{{ fmt_money(row.expenses) }}</td><td>{{ fmt_money(row.profit) }}</td></tr>{% else %}<tr><td colspan="6" class="muted">No active houses yet.</td></tr>{% endfor %}</tbody></table></div></div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><strong>Recent Transactions</strong><span class="pill">Bank</span></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Account</th><th>Type</th><th>Amount</th></tr></thead><tbody>{% for row in ctx.recent_bank %}<tr><td>{{ row.entry_date }}</td><td>{{ row.account_name or '—' }}</td><td>{{ row.tx_type }}</td><td>{{ fmt_money(row.amount) }}</td></tr>{% else %}<tr><td colspan="4" class="muted">No transactions yet.</td></tr>{% endfor %}</tbody></table></div></div>
+</div>
+
+<div class="card" style="margin-top:18px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>Recent Receipts</strong><span class="pill">Expenses</span></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Module</th><th>Category</th><th>Amount</th><th>Receipt</th></tr></thead><tbody>{% for row in ctx.recent_receipts %}<tr><td>{{ row.entry_date }}</td><td>{{ row.module_name }}</td><td>{{ row.category or 'Expense' }}</td><td>{{ fmt_money(row.amount) }}</td><td>{% if row.receipt_file %}<a href="/receipts/{{ row.receipt_file }}" target="_blank">Open</a>{% endif %}</td></tr>{% else %}<tr><td colspan="5" class="muted">No receipts yet.</td></tr>{% endfor %}</tbody></table></div></div>
+
+<script>
+new Chart(document.getElementById('poultryPie'),{type:'pie',data:{labels:['Heads'],datasets:[{data:[{{ ctx.poultry_live|default(0) }}],backgroundColor:['#16a34a']}]},options:{plugins:{legend:{display:false}},responsive:true,maintainAspectRatio:false}})
+new Chart(document.getElementById('hogPie'),{type:'pie',data:{labels:['Piglets','Sows','Fattener'],datasets:[{data:[{{ ctx.hog_counts.piglets|default(0) }},{{ ctx.hog_counts.sows|default(0) }},{{ ctx.hog_counts.fattener|default(0) }}],backgroundColor:['#166534','#22c55e','#86efac']}]},options:{plugins:{legend:{position:'bottom'}},responsive:true,maintainAspectRatio:false}})
+new Chart(document.getElementById('fishPie'),{type:'pie',data:{labels:['Buy kg','Export kg','Sales kg'],datasets:[{data:[{{ ctx.fish_summary.bought|default(0) }},{{ ctx.fish_summary.export|default(0) }},{{ ctx.fish_summary.sales|default(0) }}],backgroundColor:['#0369a1','#0ea5e9','#7dd3fc']}]},options:{plugins:{legend:{position:'bottom'}},responsive:true,maintainAspectRatio:false}})
+new Chart(document.getElementById('cashPie'),{type:'pie',data:{labels:['Poultry','Hog','Fish'],datasets:[{data:[{{ ctx.module_mix.poultry|default(0) }},{{ ctx.module_mix.hog|default(0) }},{{ ctx.module_mix.fish|default(0) }}],backgroundColor:['#14532d','#22c55e','#86efac']}]},options:{plugins:{legend:{position:'bottom'}},responsive:true,maintainAspectRatio:false}})
+new Chart(document.getElementById('barChart'),{type:'bar',data:{labels:['Poultry','Hog','Fish'],datasets:[{label:'Income',data:[{{ ctx.revenue_chart.poultry|default(0) }},{{ ctx.revenue_chart.hog|default(0) }},{{ ctx.revenue_chart.fish|default(0) }}],backgroundColor:'#16a34a'},{label:'Expense',data:[{{ ctx.expense_chart.poultry|default(0) }},{{ ctx.expense_chart.hog|default(0) }},{{ ctx.expense_chart.fish|default(0) }}],backgroundColor:'#94a3b8'}]},options:{plugins:{legend:{position:'bottom'}},responsive:true,maintainAspectRatio:false}})
+</script>
+{% endblock %}
