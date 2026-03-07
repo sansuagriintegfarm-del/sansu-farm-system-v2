@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block page_title %}Participants{% endblock %}
+{% block content %}
+<div class="grid g2"><div class="card"><strong>Add Participant</strong><form method="post" class="form-grid" style="margin-top:12px"><input name="name" placeholder="Name" required><select name="role">{% for r in roles %}<option>{{ r }}</option>{% endfor %}</select><input name="notes" placeholder="Notes" class="full"><button class="full">Save</button></form></div><div class="card"><strong>Participant Ledger</strong><div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>{% for p in participants %}<tr><td>{{ p.name }}</td><td>{{ p.role }}</td><td>{{ 'Active' if p.active else 'Inactive' }}</td><td><a class="btn alt" href="/participants/{{ p.id }}/toggle">Toggle</a></td></tr>{% endfor %}</tbody></table></div></div></div>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block page_title %}Edit Record{% endblock %}
+{% block content %}
+<div class="card"><strong>{{ record_type }}</strong><form method="post" class="form-grid" style="margin-top:12px">{% for f in fields %}{% if f=='category' %}<select name="category">{% for c in expense_categories %}<option value="{{ c }}" {% if record[f]==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select>{% elif f=='tx_type' %}<select name="tx_type">{% for c in tx_types %}<option value="{{ c }}" {% if record[f]==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select>{% elif 'date' in f %}<input name="{{ f }}" type="date" value="{{ record[f] or '' }}">{% else %}<input name="{{ f }}" value="{{ record[f] or '' }}" placeholder="{{ f.replace('_',' ').title() }}">{% endif %}{% endfor %}<button class="full">Save Changes</button></form></div>
+{% endblock %}
