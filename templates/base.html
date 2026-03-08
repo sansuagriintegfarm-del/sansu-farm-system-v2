@@ -73,6 +73,66 @@
     .foot{padding:16px 28px 24px;color:#64748b;font-size:13px}
     @media (max-width:1260px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr 1fr}}
     @media (max-width:980px){.sidebar{display:none}.topbar{padding:16px 18px}.container{padding:16px}.g4,.g3,.g2,.form-grid{grid-template-columns:1fr}.topbar h2{font-size:24px}}
+  body.compact-module-dashboard .container{
+  padding-top:16px;
+  padding-bottom:16px;
+}
+
+body.compact-module-dashboard .grid,
+body.compact-module-dashboard .g2,
+body.compact-module-dashboard .g3,
+body.compact-module-dashboard .g4{
+  gap:12px;
+}
+
+body.compact-module-dashboard .card{
+  padding:14px;
+  border-radius:18px;
+}
+
+body.compact-module-dashboard .kpi .label{
+  margin-bottom:8px;
+  font-size:13px;
+}
+
+body.compact-module-dashboard .kpi .value{
+  font-size:28px;
+}
+
+body.compact-module-dashboard .kpi .meta{
+  margin-top:4px;
+  font-size:12px;
+}
+
+body.compact-module-dashboard .chart-wrap{
+  height:170px !important;
+}
+
+body.compact-module-dashboard .chart-wrap.short{
+  height:150px !important;
+}
+
+body.compact-module-dashboard .chart-wrap.tall{
+  height:210px !important;
+}
+
+body.compact-module-dashboard table th,
+body.compact-module-dashboard table td{
+  padding:8px 8px;
+  font-size:13px;
+}
+
+body.compact-module-dashboard .tabs{
+  margin-bottom:10px;
+}
+
+body.compact-module-dashboard .section-head{
+  margin-bottom:8px;
+}
+
+body.compact-module-dashboard .empty{
+  min-height:80px;
+}
   </style>
 </head>
 <body>
@@ -167,24 +227,22 @@
   </main>
 </div>
 <script>
-if ('scrollRestoration' in history) {
-  history.scrollRestoration = 'manual';
-}
-
 window.addEventListener('load', function () {
   const p = window.location.pathname;
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get('tab') || 'overview';
 
-  if (
-    p.startsWith('/poultry') ||
-    p.startsWith('/hog') ||
-    p.startsWith('/fish')
-  ) {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const isModuleOverview =
+    (
+      p.startsWith('/poultry') ||
+      p.startsWith('/hog') ||
+      p.startsWith('/fish')
+    ) && tab === 'overview';
 
-    const main = document.querySelector('.main');
-    if (main) {
-      main.scrollTop = 0;
-    }
+  if (isModuleOverview) {
+    document.body.classList.add('compact-module-dashboard');
+  } else {
+    document.body.classList.remove('compact-module-dashboard');
   }
 });
 </script>
