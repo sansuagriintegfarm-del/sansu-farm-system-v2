@@ -78,64 +78,85 @@
   padding-bottom:16px;
 }
 
-body.compact-module-dashboard .grid,
-body.compact-module-dashboard .g2,
+body.compact-module-dashboard .container{
+  padding-top:12px !important;
+  padding-bottom:12px !important;
+}
+
+body.compact-module-dashboard .tabs{
+  margin-bottom:8px !important;
+  gap:8px !important;
+}
+
+body.compact-module-dashboard .g4,
 body.compact-module-dashboard .g3,
-body.compact-module-dashboard .g4{
-  gap:12px;
+body.compact-module-dashboard .g2,
+body.compact-module-dashboard .grid{
+  gap:10px !important;
 }
 
 body.compact-module-dashboard .card{
-  padding:14px;
-  border-radius:18px;
+  padding:12px !important;
+  border-radius:18px !important;
 }
 
 body.compact-module-dashboard .kpi .label{
-  margin-bottom:8px;
-  font-size:13px;
+  margin-bottom:6px !important;
+  font-size:12px !important;
 }
 
 body.compact-module-dashboard .kpi .value{
-  font-size:28px;
+  font-size:24px !important;
+  line-height:1.05 !important;
 }
 
 body.compact-module-dashboard .kpi .meta{
-  margin-top:4px;
-  font-size:12px;
+  margin-top:2px !important;
+  font-size:11px !important;
+  line-height:1.25 !important;
 }
 
 body.compact-module-dashboard .chart-wrap{
-  height:170px !important;
+  height:140px !important;
+  min-height:140px !important;
 }
 
 body.compact-module-dashboard .chart-wrap.short{
-  height:150px !important;
+  height:130px !important;
+  min-height:130px !important;
 }
 
 body.compact-module-dashboard .chart-wrap.tall{
-  height:210px !important;
+  height:170px !important;
+  min-height:170px !important;
 }
 
 body.compact-module-dashboard table th,
 body.compact-module-dashboard table td{
-  padding:8px 8px;
-  font-size:13px;
-}
-
-body.compact-module-dashboard .tabs{
-  margin-bottom:10px;
+  padding:7px 7px !important;
+  font-size:12px !important;
 }
 
 body.compact-module-dashboard .section-head{
-  margin-bottom:8px;
+  margin-bottom:6px !important;
 }
 
 body.compact-module-dashboard .empty{
-  min-height:80px;
+  min-height:70px !important;
+}
+
+body.compact-module-dashboard input,
+body.compact-module-dashboard select,
+body.compact-module-dashboard textarea{
+  padding:9px 11px !important;
+}
+
+body.compact-module-dashboard .form-grid{
+  gap:10px !important;
 }
   </style>
 </head>
-<body>
+<body class="{% if request.path.startswith('/poultry') or request.path.startswith('/hog') or request.path.startswith('/fish') %}{% if request.args.get('tab', 'overview') == 'overview' %}compact-module-dashboard{% endif %}{% endif %}">
 <div class="app">
   <aside class="sidebar">
     <div class="brand">
