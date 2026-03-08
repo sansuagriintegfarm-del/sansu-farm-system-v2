@@ -17,3 +17,34 @@
 <div class="card"><strong>Cycle History</strong><div class="table-wrap"><table><thead><tr><th>Pen</th><th>Start</th><th>Heads</th><th>Cost</th><th>Status</th></tr></thead><tbody>{% for c in cycles %}<tr><td>{{ c.pen_name }}</td><td>{{ c.start_date }}</td><td>{{ c.heads }}</td><td>{{ fmt_money(c.cost) }}</td><td>{{ c.status }}</td></tr>{% endfor %}</tbody></table></div></div>
 {% endif %}
 {% endblock %}
+{% endblock %}
+
+<style>
+.chart-wrap{
+  height:150px !important;
+}
+
+.chart-wrap.short{
+  height:130px !important;
+}
+
+.chart-wrap.tall{
+  height:170px !important;
+}
+
+.empty{
+  min-height:70px !important;
+}
+
+.card{
+  padding:14px !important;
+}
+
+.kpi .value{
+  font-size:24px !important;
+}
+
+.kpi .meta{
+  font-size:12px !important;
+}
+</style>
