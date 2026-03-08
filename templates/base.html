@@ -116,7 +116,13 @@
   <main class="main">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:14px">
-        <div class="topbar-logo">{% if logo_url %}<img src="{{ logo_url }}" alt="logo">{% else %}SA{% endif %}</div>
+        <div class="brand-mark">
+  {% if logo_url %}
+    <img src="{{ logo_url }}" alt="logo">
+  {% else %}
+    SA
+  {% endif %}
+</div>
         <div>
           <h2>{% block page_title %}Dashboard{% endblock %}</h2>
           <p>{% block page_subtitle %}{% endblock %}</p>
