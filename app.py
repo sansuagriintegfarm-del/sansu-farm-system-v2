@@ -979,12 +979,24 @@ def poultry_page():
             flash('Poultry sale saved.', 'success')
             return redirect(url_for('poultry_page', tab='finance'))
         if form_name == 'expense':
-            receipt_file = save_uploaded_receipt(request.files.get('receipt_file'), f"poultry_{request.form.get('entry_date')}")
-            exp_id = execute('INSERT INTO poultry_expenses(batch_id,entry_date,category,amount,description,receipt_file) VALUES(?,?,?,?,?,?)',
-                    (None, request.form['entry_date'], request.form.get('category'), float(request.form.get('amount') or 0), f"{request.form.get('item_name')}{' - ' + request.form.get('description') if request.form.get('description') else ''}", receipt_file)
-            log_audit('ADD', 'poultry_expense', exp_id, request.form.get('description'))
-            flash('Expense saved.', 'success')
-            return redirect(url_for('poultry_page', tab='finance'))
+    receipt_file = save_uploaded_receipt(
+        request.files.get('receipt_file'),
+        f"poultry_{request.form.get('entry_date')}"
+    )
+    exp_id = execute(
+        'INSERT INTO poultry_expenses(batch_id,entry_date,category,amount,description,receipt_file) VALUES(?,?,?,?,?,?)',
+        (
+            None,
+            request.form['entry_date'],
+            request.form.get('category'),
+            float(request.form.get('amount') or 0),
+            f"{request.form.get('item_name')}{' - ' + request.form.get('description') if request.form.get('description') else ''}",
+            receipt_file
+        )
+    )
+    log_audit('ADD', 'poultry_expense', exp_id, request.form.get('description'))
+    flash('Expense saved.', 'success')
+    return redirect(url_for('poultry_page', tab='finance'))
         if form_name == 'bulk_expense':
             rows = parse_bulk_rows(request.form)
             group_ref = f"PB-{request.form.get('entry_date')}-{int(request.form.get('batch_id') or 0)}-{len(rows)}"
