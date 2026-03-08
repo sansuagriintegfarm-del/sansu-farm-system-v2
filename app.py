@@ -761,9 +761,9 @@ def default_logo_url():
     env_logo = os.getenv('LOGO_URL', '').strip()
     if env_logo:
         return env_logo
-    local_logo = BASE_DIR / 'static' / 'farm_logo.png'
+    local_logo = BASE_DIR / 'static' / 'logo.png'
     if local_logo.exists():
-        return url_for('static', filename='farm_logo.png')
+        return url_for('static', filename='logo.png')
     return ''
 
 
