@@ -146,13 +146,24 @@
   </main>
 </div>
 <script>
-if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
 window.addEventListener('load', function () {
   const p = window.location.pathname;
-  if (p === '/poultry' || p === '/hog' || p === '/fish') {
-    window.scrollTo({top: 0, behavior: 'smooth'});
+
+  if (
+    p.startsWith('/poultry') ||
+    p.startsWith('/hog') ||
+    p.startsWith('/fish')
+  ) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     const main = document.querySelector('.main');
-    if (main) { main.scrollTo({top: 0, behavior: 'smooth'}); }
+    if (main) {
+      main.scrollTop = 0;
+    }
   }
 });
 </script>
