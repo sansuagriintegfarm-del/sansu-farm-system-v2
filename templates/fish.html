@@ -18,4 +18,3 @@
 <div class="card"><strong>Pond History</strong><div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Details</th><th>Amount</th></tr></thead><tbody>{% for r in finance_history %}<tr><td>{{ r.entry_date }}</td><td>{{ r.type_label }}</td><td>{{ r.details }}</td><td>{{ fmt_money(r.amount) }}</td></tr>{% endfor %}</tbody></table></div></div>
 {% endif %}
 {% endblock %}
-{% endblock %}
