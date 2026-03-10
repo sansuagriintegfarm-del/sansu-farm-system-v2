@@ -19,7 +19,7 @@ POULTRY_TYPES = ['Broiler', 'Free Range', 'Layer', 'Native Chicken']
 EXPENSE_CATEGORIES = ['Feeds', 'Medicines', 'Vitamins', 'Vaccines', 'Chicks', 'Labor', 'Utilities', 'Electric Bill', 'Canvass', 'Delivery', 'Logistics', 'Equipment Purchase', 'Repairs / Maintenance', 'Other']
 FEED_USAGE_TYPES = ['Direct Use', 'Add to Inventory']
 
-app = Flask(__name__, template_folder=str(BASE_DIR))
+app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'sansu-v6-secret')
 UPLOAD_DIR = BASE_DIR / 'receipts'
 ALLOWED_UPLOADS = {'jpg','jpeg','png','pdf','webp'}
