@@ -10,7 +10,7 @@
   <div class="chart-wrap short" style="height:220px">
     <canvas id="fsFlow"></canvas>
   </div>
-</div><div class="card"><strong>Participants</strong><table><thead><tr><th>Name</th><th>Share</th></tr></thead><tbody>{% for p in share_participants %}<tr><td>{{ p.name }}</td><td>{{ fmt_money(share) }}</td></tr>{% else %}<tr><td colspan="2" class="muted">No linked participants.</td></tr>{% endfor %}</tbody></table></div></div>
+</div><div class="card"><strong>Participants</strong><table><thead><tr><th>Name</th><th>Share</th></tr></thead><tbody>{% for p in share_participants %}<tr><td>{{ p.name }}</td><td>{{ fmt_money(p.share) }}</td></tr>{% else %}<tr><td colspan="2" class="muted">No linked participants.</td></tr>{% endfor %}</tbody></table></div></div>
 <div class="card" style="margin-top:18px"><strong>Cashflow</strong><table><thead><tr><th>Date</th><th>Type</th><th>Details</th><th>In</th><th>Out</th></tr></thead><tbody>{% for r in cashflow_rows %}<tr><td>{{ r.entry_date }}</td><td>{{ r.kind }}</td><td>{{ r.particulars }}</td><td>{{ fmt_money(r.cash_in) }}</td><td>{{ fmt_money(r.cash_out) }}</td></tr>{% else %}<tr><td colspan="5" class="muted">No cashflow yet.</td></tr>{% endfor %}</tbody></table></div>
 <script>new Chart(document.getElementById('fsFlow'),{type:'doughnut',data:{labels:['Inflow','Outflow'],datasets:[{data:[{{ cashflow_summary.cash_in|default(0) }},{{ cashflow_summary.cash_out|default(0) }}],backgroundColor:['#166534','#cbd5e1']}]},options:{plugins:{legend:{position:'bottom'}},maintainAspectRatio:false}})</script>
 {% elif tab=='operations' %}
