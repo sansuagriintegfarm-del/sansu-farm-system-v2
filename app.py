@@ -1,5 +1,7 @@
 import os
 import sqlite3
+import psycopg
+from psycopg.rows import dict_row
 from pathlib import Path
 from functools import wraps
 from flask import Flask, g, render_template, request, redirect, url_for, session, flash, send_from_directory
