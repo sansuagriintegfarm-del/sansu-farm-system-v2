@@ -218,14 +218,14 @@ def save_uploaded_receipt(file_storage, prefix='receipt'):
 def init_db():
     schema_sql = """
     CREATE TABLE IF NOT EXISTS users(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         username TEXT UNIQUE,
         password TEXT,
         full_name TEXT,
         role TEXT
     );
     CREATE TABLE IF NOT EXISTS participants(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
         role TEXT NOT NULL,
         module_name TEXT NOT NULL DEFAULT 'POULTRY',
@@ -233,7 +233,7 @@ def init_db():
         active INTEGER DEFAULT 1
     );
     CREATE TABLE IF NOT EXISTS bank_accounts(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         account_name TEXT NOT NULL,
         bank_name TEXT NOT NULL,
         account_type TEXT NOT NULL,
@@ -242,7 +242,7 @@ def init_db():
         notes TEXT
     );
     CREATE TABLE IF NOT EXISTS bank_transactions(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         entry_date TEXT NOT NULL,
         account_id INTEGER,
         module_name TEXT,
@@ -254,7 +254,7 @@ def init_db():
         FOREIGN KEY(account_id) REFERENCES bank_accounts(id)
     );
     CREATE TABLE IF NOT EXISTS owner_withdrawals(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         entry_date TEXT NOT NULL,
         account_id INTEGER,
         amount REAL NOT NULL DEFAULT 0,
@@ -264,7 +264,7 @@ def init_db():
         FOREIGN KEY(account_id) REFERENCES bank_accounts(id)
     );
     CREATE TABLE IF NOT EXISTS cycles(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         module_name TEXT NOT NULL,
         cycle_name TEXT NOT NULL,
         poultry_type TEXT,
@@ -274,14 +274,14 @@ def init_db():
         notes TEXT
     );
     CREATE TABLE IF NOT EXISTS cycle_participants(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         cycle_id INTEGER NOT NULL,
         participant_id INTEGER NOT NULL,
         FOREIGN KEY(cycle_id) REFERENCES cycles(id) ON DELETE CASCADE,
         FOREIGN KEY(participant_id) REFERENCES participants(id)
     );
     CREATE TABLE IF NOT EXISTS capital_entries(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         cycle_id INTEGER,
         module_name TEXT NOT NULL,
         entry_date TEXT NOT NULL,
@@ -293,7 +293,7 @@ def init_db():
         FOREIGN KEY(destination_account_id) REFERENCES bank_accounts(id)
     );
     CREATE TABLE IF NOT EXISTS poultry_batches(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         cycle_id INTEGER,
         poultry_type TEXT NOT NULL,
         batch_name TEXT NOT NULL,
@@ -307,7 +307,7 @@ def init_db():
         FOREIGN KEY(cycle_id) REFERENCES cycles(id)
     );
     CREATE TABLE IF NOT EXISTS poultry_mortality(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         batch_id INTEGER,
         entry_date TEXT NOT NULL,
         deaths INTEGER DEFAULT 0,
@@ -315,7 +315,7 @@ def init_db():
         FOREIGN KEY(batch_id) REFERENCES poultry_batches(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS poultry_feed_logs(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         batch_id INTEGER,
         entry_date TEXT NOT NULL,
         feed_type TEXT,
@@ -325,7 +325,7 @@ def init_db():
         FOREIGN KEY(batch_id) REFERENCES poultry_batches(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS poultry_sales(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         batch_id INTEGER,
         entry_date TEXT NOT NULL,
         buyer TEXT,
@@ -337,7 +337,7 @@ def init_db():
         FOREIGN KEY(batch_id) REFERENCES poultry_batches(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS poultry_expenses(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         batch_id INTEGER,
         entry_date TEXT NOT NULL,
         category TEXT,
@@ -348,7 +348,7 @@ def init_db():
         FOREIGN KEY(batch_id) REFERENCES poultry_batches(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS hog_cycles(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         cycle_id INTEGER,
         pen_name TEXT,
         start_date TEXT,
@@ -361,7 +361,7 @@ def init_db():
         FOREIGN KEY(cycle_id) REFERENCES cycles(id)
     );
     CREATE TABLE IF NOT EXISTS hog_feed_logs(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         hog_cycle_id INTEGER,
         entry_date TEXT,
         feed_type TEXT,
@@ -371,7 +371,7 @@ def init_db():
         FOREIGN KEY(hog_cycle_id) REFERENCES hog_cycles(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS hog_sales(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         hog_cycle_id INTEGER,
         entry_date TEXT,
         buyer TEXT,
@@ -382,7 +382,7 @@ def init_db():
         FOREIGN KEY(hog_cycle_id) REFERENCES hog_cycles(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS hog_expenses(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         hog_cycle_id INTEGER,
         entry_date TEXT,
         category TEXT,
@@ -394,7 +394,7 @@ def init_db():
         FOREIGN KEY(hog_cycle_id) REFERENCES hog_cycles(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS fish_cycles(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         cycle_id INTEGER,
         period_name TEXT,
         start_date TEXT,
@@ -403,7 +403,7 @@ def init_db():
         FOREIGN KEY(cycle_id) REFERENCES cycles(id)
     );
     CREATE TABLE IF NOT EXISTS fish_transactions(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         fish_cycle_id INTEGER,
         entry_date TEXT,
         transaction_type TEXT,
@@ -417,7 +417,7 @@ def init_db():
         FOREIGN KEY(fish_cycle_id) REFERENCES fish_cycles(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS fish_expenses(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         fish_cycle_id INTEGER,
         entry_date TEXT,
         category TEXT,
@@ -429,7 +429,7 @@ def init_db():
         FOREIGN KEY(fish_cycle_id) REFERENCES fish_cycles(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS feed_inventory(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         module_name TEXT NOT NULL DEFAULT 'POULTRY',
         entry_date TEXT NOT NULL,
         feed_type TEXT NOT NULL,
@@ -443,7 +443,7 @@ def init_db():
         notes TEXT
     );
     CREATE TABLE IF NOT EXISTS audit_log(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         event_time TEXT DEFAULT CURRENT_TIMESTAMP,
         event_type TEXT,
         record_type TEXT,
