@@ -1485,9 +1485,11 @@ def finance_page():
     return render_template('finance.html', poultry=poultry, hog=hog, fish=fish, farm={'cash_in':global_cash_in,'cash_out':global_cash_out,'remaining':global_cash_in-global_cash_out}, cycles=query('SELECT * FROM cycles ORDER BY id DESC LIMIT 100'), capital=query('SELECT ce.*, ba.account_name FROM capital_entries ce LEFT JOIN bank_accounts ba ON ba.id=ce.destination_account_id ORDER BY ce.id DESC LIMIT 100'), bank_accounts=query('SELECT * FROM bank_accounts ORDER BY account_name'))
 
 
-with app.app_context():
+def initialize_database():
     init_db()
     migrate_db()
+
+initialize_database()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', '5000')), debug=os.getenv('FLASK_DEBUG', '0') == '1')
