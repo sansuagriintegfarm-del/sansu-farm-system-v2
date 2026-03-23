@@ -534,14 +534,22 @@ def owner_income_share(module_name, finance, cycle=None):
 
 def owner_withdrawal_summary(owner_share_total):
     withdrawable_base = round(float(owner_share_total or 0) * 0.5, 2)
-    withdrawn_total = float(query('SELECT COALESCE(SUM(amount),0) v FROM owner_withdrawals', one=True)['v'] or 0)
+
+    try:
+        withdrawn_row = query('SELECT COALESCE(SUM(amount),0) v FROM owner_withdrawals', one=True)
+        withdrawn_total = float((withdrawn_row or {}).get('v', 0) if isinstance(withdrawn_row, dict) else (withdrawn_row['v'] if withdrawn_row else 0))
+        recent_owner_withdrawals = query(
+            '''SELECT ow.*, ba.account_name
+               FROM owner_withdrawals ow
+               LEFT JOIN bank_accounts ba ON ba.id=ow.account_id
+               ORDER BY ow.id DESC LIMIT 8'''
+        )
+    except Exception:
+        withdrawn_total = 0.0
+        recent_owner_withdrawals = []
+
     withdrawable_remaining = round(max(withdrawable_base - withdrawn_total, 0), 2)
-    recent_owner_withdrawals = query(
-        '''SELECT ow.*, ba.account_name
-           FROM owner_withdrawals ow
-           LEFT JOIN bank_accounts ba ON ba.id=ow.account_id
-           ORDER BY ow.id DESC LIMIT 8'''
-    )
+
     return {
         'withdrawable_base': withdrawable_base,
         'withdrawn_total': round(withdrawn_total, 2),
@@ -945,9 +953,24 @@ def ensure_column(table, column, definition):
 def migrate_db():
     ensure_column('participants', 'module_name', 'TEXT NOT NULL DEFAULT "POULTRY"')
     db = sqlite3.connect(DB_PATH)
+
     db.execute("UPDATE participants SET module_name='POULTRY' WHERE module_name IS NULL OR TRIM(module_name)=''")
+
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS owner_withdrawals(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            entry_date TEXT NOT NULL,
+            account_id INTEGER,
+            amount REAL NOT NULL DEFAULT 0,
+            reference_no TEXT,
+            notes TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     db.commit()
     db.close()
+
     ensure_column('poultry_expenses', 'group_ref', 'TEXT')
     ensure_column('hog_expenses', 'group_ref', 'TEXT')
     ensure_column('fish_expenses', 'group_ref', 'TEXT')
