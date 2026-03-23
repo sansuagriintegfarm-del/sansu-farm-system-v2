@@ -6,6 +6,9 @@ from flask import Flask, g, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+USE_POSTGRES = bool(DATABASE_URL)
+
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = Path(os.getenv('DB_PATH', str(BASE_DIR / 'sansu_v5_1.db')))
 APP_NAME = 'SANSU AGRIFOOD INTEGRATED FARM SYSTEM'
