@@ -41,7 +41,7 @@
   </div>
   <div class="card">
     <strong>Feed Stock</strong>
-    <div class="value" style="font-size:40px;font-weight:800;margin:14px 0">{{ '%.1f'|format(feed_stock_remaining or 0) }}</div>
+    <div class="value" style="font-size:40px;font-weight:800;margin:14px 0">{{ (feed_stock_remaining or 0)|int }}</div>
     <div class="muted">sacks remaining</div>
   </div>
   <div class="card">
