@@ -26,8 +26,10 @@
         {% for p in poultry_types %}<option>{{ p }}</option>{% endfor %}
       </select>
       <input name="notes" placeholder="Notes" class="full">
-      <select name="participants" class="full" multiple size="4">
-        {% for p in available_participants %}<option value="{{ p.id }}">{{ p.name }} — {{ p.role }}</option>{% endfor %}
+      <select name="participants" multiple class="full">
+        {% for p in available_participants %}
+        <option value="{{ p.id }}">{{ p.name }} — {{ p.role }}</option>
+        {% endfor %}
       </select>
       <button>Start Cycle</button>
     </form>
