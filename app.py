@@ -7,7 +7,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = Path(os.getenv('DB_PATH', str(BASE_DIR / 'sansu_v5_1.db')))
+DATA_DIR = Path(os.getenv('DATA_DIR', '/opt/render/project/src/data'))
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+DB_PATH = Path(os.getenv('DB_PATH', str(DATA_DIR / 'sansu_v5_1.db')))
 APP_NAME = 'SANSU AGRIFOOD INTEGRATED FARM SYSTEM'
 DASHBOARD_SUBTITLE = 'Mixed Farm Management ERP'
 FOOTER_EMAIL = 'sansuagriintegfarm@gmail.com'
@@ -101,6 +104,7 @@ def participant_allocations(cycle, finance):
 
 def get_db():
     if 'db' not in g:
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
         conn.execute('PRAGMA foreign_keys = ON')
