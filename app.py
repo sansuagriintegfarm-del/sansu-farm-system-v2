@@ -11,6 +11,9 @@ from werkzeug.utils import secure_filename
 DATABASE_URL = os.getenv("DATABASE_URL")
 USE_POSTGRES = bool(DATABASE_URL)
 
+def normalize_schema_sql(schema_sql: str) -> str:
+    return schema_sql
+
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = Path(os.getenv('DB_PATH', str(BASE_DIR / 'sansu_v5_1.db')))
 APP_NAME = 'SANSU AGRIFOOD INTEGRATED FARM SYSTEM'
