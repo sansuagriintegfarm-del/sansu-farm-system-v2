@@ -96,7 +96,7 @@
       <select name="account_id" required>
         <option value="">Select bank account</option>
         {% for b in ctx.bank_accounts %}
-        <option value="{{ b.id }}">{{ b.account_name }} — {{ fmt_money(b.current_balance) }}</option>
+        <option value="{{ b.id }}">{{ bank_option_label(b) }}</option>
         {% endfor %}
       </select>
       <input name="amount" type="number" step="0.01" placeholder="Withdraw amount" required>
